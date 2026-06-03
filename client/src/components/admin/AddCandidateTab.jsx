@@ -1,6 +1,6 @@
 // client/src/components/admin/AddCandidateTab.jsx
 import { useState } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 
 const fields = [
   { label: "Full name", name: "name", placeholder: "Rahul Sharma" },
@@ -64,9 +64,8 @@ const AddCandidateTab = ({ token, onSuccess }) => {
         Object.entries(rest).forEach(([k, v]) => formData.append(k, v));
         if (image) formData.append("image", image);
 
-        await axios.post("http://localhost:5000/api/candidates", formData, {
+        await api.post("/candidates", formData, {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         });
@@ -141,7 +140,7 @@ const AddCandidateTab = ({ token, onSuccess }) => {
               className={`bg-white border-2 rounded-2xl p-5 transition-all
                 ${result?.success ? "border-green-300 bg-green-50/30"
                   : result?.error ? "border-red-300 bg-red-50/20"
-                  : "border-gray-100"}`}
+                    : "border-gray-100"}`}
             >
               {/* Card header */}
               <div className="flex items-center justify-between mb-4">
@@ -149,7 +148,7 @@ const AddCandidateTab = ({ token, onSuccess }) => {
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0
                     ${result?.success ? "bg-green-100 text-green-700"
                       : result?.error ? "bg-red-100 text-red-700"
-                      : "bg-blue-100 text-blue-700"}`}>
+                        : "bg-blue-100 text-blue-700"}`}>
                     {result?.success ? "✓" : result?.error ? "✗" : idx + 1}
                   </div>
                   <p className="text-xs font-semibold text-gray-700">
