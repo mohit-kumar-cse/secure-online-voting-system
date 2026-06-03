@@ -1,6 +1,6 @@
 // client/src/components/admin/CandidatesTab.jsx
 import { useState } from "react";
-import api from "../../utils/api"; 
+import api from "../../utils/api";
 
 // const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
 
@@ -8,12 +8,12 @@ const getInitials = (name) =>
   name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "?";
 
 const CandidatesTab = ({ candidates = [], onAddNew, onRefresh }) => {
-  
-  const [deletingId, setDeletingId]   = useState(null);
-  const [confirmId, setConfirmId]     = useState(null);
+
+  const [deletingId, setDeletingId] = useState(null);
+  const [confirmId, setConfirmId] = useState(null);
   const [deleteError, setDeleteError] = useState("");
-  const [imgErrors, setImgErrors]     = useState({});  
-  const [search, setSearch]           = useState("");  
+  const [imgErrors, setImgErrors] = useState({});
+  const [search, setSearch] = useState("");
 
   const handleDeleteClick = (id) => {
     setConfirmId(id);
@@ -24,19 +24,19 @@ const CandidatesTab = ({ candidates = [], onAddNew, onRefresh }) => {
     try {
       setDeletingId(id);
       setDeleteError("");
-      
+
       await api.delete(`/candidates/${id}`);
       setConfirmId(null);
       onRefresh();
     } catch (err) {
-      
+
       setDeleteError(err.response?.data?.message || "Failed to delete candidate.");
     } finally {
       setDeletingId(null);
     }
   };
 
-  
+
   const filtered = candidates.filter((c) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
@@ -52,7 +52,7 @@ const CandidatesTab = ({ candidates = [], onAddNew, onRefresh }) => {
 
       {/* Header row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-         
+
         <div className="relative flex-1 max-w-sm">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" />
@@ -76,7 +76,7 @@ const CandidatesTab = ({ candidates = [], onAddNew, onRefresh }) => {
         </button>
       </div>
 
-     
+
       {deleteError && (
         <div className="flex items-start gap-2 text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
           <svg className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -121,10 +121,11 @@ const CandidatesTab = ({ candidates = [], onAddNew, onRefresh }) => {
 
               {/* Main row */}
               <div className="flex items-center gap-3">
-               
+
                 {c.image && !imgErrors[c._id] ? (
                   <img
-                    
+                    src={c.image}
+
                     onError={() => setImgErrors((prev) => ({ ...prev, [c._id]: true }))}
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-gray-100"
                   />
@@ -144,7 +145,7 @@ const CandidatesTab = ({ candidates = [], onAddNew, onRefresh }) => {
                   <p className="text-xs text-gray-400">votes</p>
                 </div>
 
-                 
+
                 {confirmId === c._id ? (
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
