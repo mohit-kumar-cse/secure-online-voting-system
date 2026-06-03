@@ -2,7 +2,7 @@
  
 import { useState } from "react";
 
-const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
+// const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const VoteCard = ({ candidate, onVote, hasVoted = false, isLoading = false }) => {
   const [imgError, setImgError] = useState(false);
@@ -22,7 +22,7 @@ const VoteCard = ({ candidate, onVote, hasVoted = false, isLoading = false }) =>
     
       {showImage ? (
         <img
-          src={`${BASE_URL}/uploads/candidates/${candidate.image}`}
+          src={ candidate.image }
           alt={candidate.name}
           onError={() => setImgError(true)}
           className="w-full h-40 sm:h-52 object-cover"

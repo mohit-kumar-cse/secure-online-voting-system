@@ -130,8 +130,8 @@ const MyVote = () => {
             <div className="flex items-center gap-3">
               {hasImage ? (
                 <img
-                  src={`${BASE_URL}/uploads/candidates/${vote.candidate.image}`}
-                  alt={vote.candidate?.name}
+                  ssrc={candidate.image}
+                  alt={candidate?.name}
                   onError={() => setImgError(true)}
                   className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0"
                 />

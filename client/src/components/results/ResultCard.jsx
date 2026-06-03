@@ -1,7 +1,7 @@
 // client/src/components/results/ResultCard.jsx
  import { useState } from "react";
 
-const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
+// const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const ResultCard = ({ candidate, votes, percentage, isWinner, rank }) => {
   const [imgError, setImgError] = useState(false);
@@ -25,7 +25,7 @@ const ResultCard = ({ candidate, votes, percentage, isWinner, rank }) => {
            
           {showImage ? (
             <img
-              src={`${BASE_URL}/uploads/candidates/${candidate.image}`}
+              src={ candidate.image } 
               alt={candidate.name}
               onError={() => setImgError(true)}
               className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-gray-100"

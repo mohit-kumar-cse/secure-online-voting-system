@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../utils/api"; 
 import { ElectionContext } from "../context/ElectionContext";
 
-const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
+// const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const partySymbols = {
   "BJP": "🪷", "Congress": "✋", "BSP": "🐘", "SP": "🚲",
@@ -108,7 +108,7 @@ const CandidateProfile = () => {
             <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white/30 mx-auto shadow-xl">
               {hasImage ? (
                 <img
-                  src={`${BASE_URL}/uploads/candidates/${candidate.image}`}
+                  src={candidate.image}
                   alt={candidate.name}
                   onError={() => setImgError(true)}
                   className="w-full h-full object-cover object-top"

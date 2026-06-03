@@ -2,7 +2,7 @@
 import { useState } from "react";
 import api from "../../utils/api"; 
 
-const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
+// const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const getInitials = (name) =>
   name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "?";
@@ -124,8 +124,7 @@ const CandidatesTab = ({ candidates = [], onAddNew, onRefresh }) => {
                
                 {c.image && !imgErrors[c._id] ? (
                   <img
-                    src={`${BASE_URL}/uploads/candidates/${c.image}`}
-                    alt={c.name}
+                    
                     onError={() => setImgErrors((prev) => ({ ...prev, [c._id]: true }))}
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-gray-100"
                   />

@@ -1,8 +1,6 @@
 // client/src/components/candidates/CandidateCard.jsx
 import { Link } from "react-router-dom";
 
-const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
-
 const partyColors = [
   "border-blue-500", "border-orange-500", "border-green-500",
   "border-purple-500", "border-red-500", "border-teal-500",
@@ -21,8 +19,8 @@ const CandidateCard = ({ candidate, index = 0 }) => {
       <div className="relative w-full h-40 sm:h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
         {candidate.image ? (
           <img
-            src={`${BASE_URL}/uploads/candidates/${candidate.image}`}
-            alt={candidate.name}
+           src={candidate.image}
+          alt={candidate.name}
             onError={(e) => { e.target.style.display = "none"; }}
             className="w-full h-full object-cover object-top"
           />

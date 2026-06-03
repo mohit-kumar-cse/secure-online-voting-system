@@ -36,7 +36,7 @@ const Results = () => {
       }
     };
     
-    // Only fetch candidate results if there's an active election
+    
     if (election) {
       fetchResults();
     } else if (!electionLoading) {
@@ -180,7 +180,9 @@ const Results = () => {
           </div>
 
           {winner.image ? (
-            <img src={`${BASE_URL}/uploads/candidates/${winner.image}`} alt={winner.name}
+            <img 
+            src={winner.image}
+            alt={winner.name}
               className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-white/30 flex-shrink-0" />
           ) : (
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center text-lg font-bold text-white flex-shrink-0">
@@ -211,7 +213,9 @@ const Results = () => {
       {activeTab !== "all" && tabWinner && (
         <div className="bg-gradient-to-r from-indigo-700 to-blue-600 rounded-2xl p-4 mb-5 flex items-center gap-3">
           {tabWinner.image ? (
-            <img src={`${BASE_URL}/uploads/candidates/${tabWinner.image}`} alt={tabWinner.name}
+            <img 
+            src={tabWinner.image} 
+            alt={tabWinner.name}
               className="w-12 h-12 rounded-full object-cover border-2 border-white/30 flex-shrink-0" />
           ) : (
             <div className="w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center text-lg font-bold text-white flex-shrink-0">
@@ -242,7 +246,9 @@ const Results = () => {
               return (
                 <div key={candidate._id} className={`bg-white border-2 rounded-2xl px-4 py-3 flex items-center gap-3 ${isOverall ? "border-blue-300 shadow-md" : "border-gray-100"}`}>
                   {candidate.image ? (
-                    <img src={`${BASE_URL}/uploads/candidates/${candidate.image}`} alt={candidate.name}
+                    <img 
+                    src={candidate.image} 
+                    alt={candidate.name}
                       onError={(e) => { e.target.style.display = "none"; }}
                       className={`w-10 h-10 rounded-full object-cover border-2 flex-shrink-0 ${color.border}`} />
                   ) : (
@@ -296,7 +302,10 @@ const Results = () => {
               {isWinner && <div className="absolute top-2 right-2 z-10"><div className="bg-blue-600 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">Lead</div></div>}
               <div className={`${color.bg} pt-9 pb-3 flex items-center justify-center`}>
                 {candidate.image ? (
-                  <img src={`${BASE_URL}/uploads/candidates/${candidate.image}`} alt={candidate.name}
+                  <img 
+                   
+                  src={candidate.image}
+                  alt={candidate.name}
                     onError={(e) => { e.target.style.display = "none"; }}
                     className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 ${color.border}`} />
                 ) : (
@@ -353,7 +362,9 @@ const Results = () => {
               <div key={candidate._id} className="px-3 sm:px-5 py-2.5 flex items-center gap-2 sm:gap-3 hover:bg-gray-50 transition">
                 <span className="text-xs font-bold text-gray-400 w-4 text-center flex-shrink-0">{i + 1}</span>
                 {candidate.image ? (
-                  <img src={`${BASE_URL}/uploads/candidates/${candidate.image}`} alt={candidate.name}
+                  <img 
+                  src={candidate.image} 
+                  alt={candidate.name}
                     onError={(e) => { e.target.style.display = "none"; }}
                     className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover flex-shrink-0" />
                 ) : (
