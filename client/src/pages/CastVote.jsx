@@ -5,8 +5,6 @@ import api from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 import { ElectionContext } from "../context/ElectionContext";
 
-const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
-
 const CastVote = () => {
   const { user } = useContext(AuthContext);
   const { election } = useContext(ElectionContext);
@@ -176,7 +174,7 @@ const CastVote = () => {
                   <div className="flex-shrink-0">
                     {candidate.image ? (
                       <img
-                        src={`${BASE_URL}/uploads/candidates/${candidate.image}`}
+                        src={ candidate.image }
                         alt={candidate.name}
                         onError={(e) => { e.target.style.display = "none"; }}
                         className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
