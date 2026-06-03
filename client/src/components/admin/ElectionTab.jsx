@@ -1,58 +1,85 @@
 // client/src/components/admin/ElectionTab.jsx
 import { useEffect, useState, useContext } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 import { AuthContext } from "../../context/AuthContext";
 import { ElectionContext } from "../../context/ElectionContext";
 
-const ElectionTab = () => {
-  const { token } = useContext(AuthContext);
-  const { election, refetch } = useContext(ElectionContext);
-  const [form, setForm] = useState({
-    title: "",
-    type: "Lok Sabha",
-    state: "",
-    constituency: "",
-    startDate: "",
-    endDate: "",
-    status: "upcoming",
+// ─── Constants ────────────────────────────────────────────────
+const ELECTION_TYPES = ["Lok Sabha", "Assembly", "Municipal"];
+
+const STATUS_STYLES = {
+  live:     "bg-green-100  text-green-700",
+  ended:    "bg-red-100    text-red-700",
+  upcoming: "bg-yellow-100 text-yellow-700",
+};
+
+const DEFAULT_FORM = {
+  title:     "",
+  type:      "Lok Sabha",
+  state:     "",
+  startDate: "",
+  endDate:   "",
+};
+
+// ─── Helpers ──────────────────────────────────────────────────
+const toDateInput = (iso) => iso?.split("T")[0] ?? "";
+
+const formatDate = (iso) =>
+  new Date(iso).toLocaleDateString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric",
   });
+
+// ─── Sub-components ───────────────────────────────────────────
+const Field = ({ label, children }) => (
+  <div>
+    <label className="block text-xs font-medium text-gray-700 mb-1.5">
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
+const inputCls =
+  "w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm " +
+  "focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+
+// ─── Main Component ───────────────────────────────────────────
+const ElectionTab = () => {
+  const { election, refetch } = useContext(ElectionContext);
+
+  const [form,       setForm]       = useState(DEFAULT_FORM);
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [success,    setSuccess]    = useState("");
+  const [error,      setError]      = useState("");
 
   useEffect(() => {
     if (election) {
       setForm({
-        title: election.title || "",
-        type: election.type || "Lok Sabha",
-        state: election.state || "",
-        constituency: election.constituency || "",
-        startDate: election.startDate?.split("T")[0] || "",
-        endDate: election.endDate?.split("T")[0] || "",
-        status: election.status || "upcoming",
+        title:     election.title     || "",
+        type:      election.type      || "Lok Sabha",
+        state:     election.state     || "",
+        startDate: toDateInput(election.startDate),
+        endDate:   toDateInput(election.endDate),
       });
     }
   }, [election]);
+
+  const patch = (key) => (e) =>
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     setSuccess("");
+
     try {
       if (election?._id) {
-        await axios.put(
-          `http://localhost:5000/api/election/${election._id}`,
-          form,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        
+        await api.put(`/election/${election._id}`, form);
         setSuccess("Election updated successfully!");
       } else {
-        await axios.post(
-          "http://localhost:5000/api/election",
-          form,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post("/election", form);
         setSuccess("Election created successfully!");
       }
       refetch();
@@ -64,147 +91,106 @@ const ElectionTab = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 w-full max-w-2xl mx-auto px-2 sm:px-0">
 
-      {/* Active election info */}
+      {/* ── Active election info card ── */}
       {election && (
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
             <p className="text-sm font-semibold text-blue-900">Active Election</p>
           </div>
-          <p className="text-sm text-blue-700 font-medium">{election.title}</p>
-          <p className="text-xs text-blue-500 mt-1">
-            {election.type} · {election.state} · {election.constituency}
+
+          <p className="text-sm text-blue-700 font-medium break-words">
+            {election.title}
           </p>
-          <p className="text-xs text-blue-500">
-            {new Date(election.startDate).toLocaleDateString("en-IN")} →{" "}
-            {new Date(election.endDate).toLocaleDateString("en-IN")}
+
+          <p className="text-xs text-blue-500 mt-1 flex flex-wrap gap-x-1">
+            <span>{election.type}</span>
+            {election.state && <><span>·</span><span>{election.state}</span></>}
           </p>
+
+          <p className="text-xs text-blue-500 mt-0.5">
+            {formatDate(election.startDate)} → {formatDate(election.endDate)}
+          </p>
+
           <span className={`inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full
-            ${election.status === "live" ? "bg-green-100 text-green-700"
-            : election.status === "ended" ? "bg-red-100 text-red-700"
-            : "bg-yellow-100 text-yellow-700"}`}>
-            {election.status.toUpperCase()}
+            ${STATUS_STYLES[election.status] ?? STATUS_STYLES.upcoming}`}>
+            {election.status?.toUpperCase()}
           </span>
         </div>
       )}
 
-      {/* Form */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-6">
+      {/* ── Form card ── */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6">
         <p className="text-sm font-semibold text-gray-900 mb-5">
           {election ? "Update election details" : "Create new election"}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Title */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Election title
-            </label>
+          <Field label="Election title">
             <input
               type="text"
               placeholder="India General Election 2026"
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={patch("title")}
               required
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputCls}
             />
-          </div>
+          </Field>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            {/* Type */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Election type
-              </label>
-              <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option>Lok Sabha</option>
-                <option>Assembly</option>
-                <option>Municipal</option>
+            <Field label="Election type">
+              <select value={form.type} onChange={patch("type")} className={inputCls}>
+                {ELECTION_TYPES.map((t) => (
+                  <option key={t}>{t}</option>
+                ))}
               </select>
-            </div>
+            </Field>
 
-            {/* Status */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Status
-              </label>
-              <select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="upcoming">Upcoming</option>
-                <option value="live">Live</option>
-                <option value="ended">Ended</option>
-              </select>
-            </div>
-
-            {/* State */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                State
-              </label>
+            <Field label="State">
               <input
                 type="text"
                 placeholder="Uttar Pradesh"
                 value={form.state}
-                onChange={(e) => setForm({ ...form, state: e.target.value })}
-                required
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={patch("state")}
+                className={inputCls}
               />
-            </div>
+            </Field>
 
-            {/* Constituency */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Constituency
-              </label>
-              <input
-                type="text"
-                placeholder="Prayagraj"
-                value={form.constituency}
-                onChange={(e) => setForm({ ...form, constituency: e.target.value })}
-                required
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Start date */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Start date
-              </label>
+            <Field label="Start date">
               <input
                 type="date"
                 value={form.startDate}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                onChange={patch("startDate")}
                 required
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={inputCls}
               />
-            </div>
+            </Field>
 
-            {/* End date */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                End date
-              </label>
+            <Field label="End date">
               <input
                 type="date"
                 value={form.endDate}
-                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                onChange={patch("endDate")}
                 required
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={inputCls}
               />
-            </div>
+            </Field>
 
+          </div>
+
+          {/* ── Info note ── */}
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+            <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <p className="text-xs text-amber-800">
+              Constituency is not set at the election level. Each voter automatically sees only
+              candidates from their own registered constituency.
+            </p>
           </div>
 
           {error && (
@@ -221,9 +207,11 @@ const ElectionTab = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-xl text-sm font-semibold transition disabled:opacity-60"
+            className="w-full bg-blue-700 hover:bg-blue-800 active:bg-blue-900
+              text-white py-3 rounded-xl text-sm font-semibold transition
+              disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
           >
-            {submitting ? "Saving..." : election ? "Update election" : "Create election"}
+            {submitting ? "Saving…" : election ? "Update election" : "Create election"}
           </button>
 
         </form>

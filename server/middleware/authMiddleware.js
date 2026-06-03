@@ -1,49 +1,45 @@
-// C:\secure-online-voting-system\server\middleware\authMiddleware.js
+// server/middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
-
 import User from "../models/User.js";
 
-const protect = async (
-  req,
-  res,
-  next
-) => {
+const protect = async (req, res, next) => {
+ 
+  if (!process.env.JWT_SECRET) {
+    console.error("❌ JWT_SECRET is not defined in environment variables");
+    return res.status(500).json({ message: "Server configuration error." });
+  }
 
-  let token;
+  const authHeader = req.headers.authorization;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Not authorized. No token provided." });
+  }
 
-    try {
+  const token = authHeader.split(" ")[1];
 
-      token =
-        req.headers.authorization.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
+ 
+    const user = await User.findById(decoded.id).select("-password");
 
-      req.user = await User.findById(
-        decoded.id
-      ).select("-password");
-
-      next();
-
-    } catch (error) {
-
-      res.status(401).json({
-        message: "Not authorized",
-      });
+    if (!user) {
+      return res.status(401).json({ message: "Not authorized. User no longer exists." });
     }
 
-  } else {
+    req.user = user;
+    next();
 
-    res.status(401).json({
-      message: "No token",
-    });
+  } catch (error) {
+ 
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Session expired. Please log in again." });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid token. Please log in again." });
+    }
+    console.error("Auth middleware error:", error);
+    return res.status(401).json({ message: "Not authorized." });
   }
 };
 

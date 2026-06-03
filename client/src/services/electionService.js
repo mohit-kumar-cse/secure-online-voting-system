@@ -1,34 +1,43 @@
-import api from "./api";
+// client/src/services/electionService.js
+import api from "../utils/api"; 
 
-
-// Get Election Details
-export const getElectionDetails = async () => {
-
-  const response = await api.get(
-    "/election/details"
-  );
-
-  return response.data;
+/**
+ 
+ * @returns {object} election object (or null if no active election)
+ */
+export const getActiveElection = async () => {
+  try {
+    const { data } = await api.get("/election/active");
+    return data;
+  } catch (err) {
+    // 404 = no active election (normal state, not a crash)
+    if (err.response?.status === 404) return null;
+    throw new Error(err.response?.data?.message || "Failed to fetch election.");
+  }
 };
 
-
-// Get Election Status
-export const getElectionStatus = async () => {
-
-  const response = await api.get(
-    "/election/status"
-  );
-
-  return response.data;
+/**
+  
+ * @returns {{ totalVotes, totalVoters }}
+ */
+export const getVoteStats = async () => {
+  try {
+    const { data } = await api.get("/votes/stats");
+    return data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch vote statistics.");
+  }
 };
 
-
-// Get Election Results
+/**
+  
+ * @returns {Array} 
+ */
 export const getElectionResults = async () => {
-
-  const response = await api.get(
-    "/election/results"
-  );
-
-  return response.data;
+  try {
+    const { data } = await api.get("/candidates");
+    return [...data].sort((a, b) => b.totalVotes - a.totalVotes);
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch election results.");
+  }
 };

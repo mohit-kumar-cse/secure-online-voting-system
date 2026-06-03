@@ -7,7 +7,6 @@ const Modal = ({ isOpen, onClose, children }) => {
 
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-lg relative">
 
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-red-500"
@@ -15,7 +14,6 @@ const Modal = ({ isOpen, onClose, children }) => {
           ✕
         </button>
 
-        {/* Modal Content */}
         {children}
 
       </div>

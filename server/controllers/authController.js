@@ -3,37 +3,47 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
-// REGISTER USER
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, voterId, aadhaarNumber, role } = req.body;
+    const { name, email, password, voterId, aadhaarNumber, constituency } = req.body;
 
-    const existingUser = await User.findOne({ email });
+     
+    if (!name || !email || !password || !voterId || !aadhaarNumber || !constituency) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters." });
+    }
+    if (!/^\d{12}$/.test(aadhaarNumber)) {
+      return res.status(400).json({ message: "Aadhaar must be exactly 12 digits." });
+    }
+
+    
+    const existingUser = await User.findOne({
+      $or: [{ email }, { voterId }, { aadhaarNumber }],
+    });
+
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      if (existingUser.email === email)
+        return res.status(409).json({ message: "Email already registered." });
+      if (existingUser.voterId === voterId)
+        return res.status(409).json({ message: "Voter ID already registered." });
+    
+      return res.status(409).json({ message: "Account already exists with provided details." });
     }
 
-    // Check duplicate voterId / aadhaar
-    const existingVoter = await User.findOne({ voterId });
-    if (existingVoter) {
-      return res.status(400).json({ message: "Voter ID already registered" });
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const existingAadhaar = await User.findOne({ aadhaarNumber });
-    if (existingAadhaar) {
-      return res.status(400).json({ message: "Aadhaar number already registered" });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+  
+    const hashedAadhaar = await bcrypt.hash(aadhaarNumber, 10);
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
-      voterId,
-      aadhaarNumber,
-      role,
+      voterId: voterId.trim().toUpperCase(),
+      aadhaarNumber: hashedAadhaar,
+      constituency: constituency.trim(),
     });
 
     const userObj = {
@@ -42,45 +52,52 @@ export const registerUser = async (req, res) => {
       email: user.email,
       role: user.role,
       hasVoted: user.hasVoted,
+      constituency: user.constituency,
     };
 
-    res.status(201).json({
-      user: userObj,             // ✅ context needs this
-      token: generateToken(user._id),
-    });
+    
+    res.status(201).json({ user: userObj, token: generateToken(user._id) });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Register error:", error);
+    
+    res.status(500).json({ message: "Registration failed. Please try again." });
   }
 };
 
-// LOGIN USER
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-
-    if (user && (await bcrypt.compare(password, user.password))) {
-
-      const userObj = {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        hasVoted: user.hasVoted,
-      };
-
-      res.status(200).json({
-        user: userObj,           // ✅ context needs this
-        token: generateToken(user._id),
-      });
-
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
+   
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required." });
     }
 
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+ 
+    const DUMMY_HASH = "$2a$10$dummyhashfordummypasswordtopreventtiming";
+    const passwordToCompare = user ? user.password : DUMMY_HASH;
+    const isMatch = await bcrypt.compare(password, passwordToCompare);
+
+    if (!user || !isMatch) {
+  
+      return res.status(401).json({ message: "Invalid email or password." });
+    }
+
+    const userObj = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      hasVoted: user.hasVoted,
+      constituency: user.constituency,
+    };
+
+    res.status(200).json({ user: userObj, token: generateToken(user._id) });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Login failed. Please try again." });
   }
 };

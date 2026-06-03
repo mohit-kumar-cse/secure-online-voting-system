@@ -1,24 +1,26 @@
+# Environment files
+.env
+.env.local
+.env.production
+.env.*
+!.env.example
+
 # Dependencies
 node_modules/
-client/node_modules/
-server/node_modules/
 
-# Environment variables
-.env
-server/.env
-client/.env
-
-# Build
-client/dist/
-server/dist/
-
-# Uploads (candidate images)
-server/uploads/
+# Keep uploads folder structure but ignore actual uploaded files
+uploads/candidates/*
+!uploads/candidates/.gitkeep
 
 # Logs
+logs/
 *.log
 npm-debug.log*
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+
+# Editor
+.vscode/
+.idea/

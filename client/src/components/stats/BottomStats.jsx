@@ -1,3 +1,4 @@
+// C:\secure-online-voting-system\client\src\components\stats\BottomStats.jsx
 const BottomStats = ({ totalCandidates, remainingDays }) => {
   return (
     <div className="grid grid-cols-2 gap-4">

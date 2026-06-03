@@ -1,13 +1,25 @@
-const formatDate = (date) => {
+// client/src/utils/constants.js
 
-  return new Date(date).toLocaleDateString(
-    "en-IN",
-    {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }
-  );
+export const USER_ROLES = {
+  ADMIN: "ADMIN",
+  VOTER: "VOTER",
 };
 
-export default formatDate;
+ 
+export const ELECTION_STATUS = {
+  LIVE:     "live",
+  ENDED:    "ended",
+  UPCOMING: "upcoming",
+};
+
+ 
+export const PARTY_SYMBOLS = {
+  BJP:          "🪷",
+  Congress:     "✋",
+  BSP:          "🐘",
+  SP:           "🚲",
+  AAP:          "🧹",
+  TMC:          "🌸",
+  "Bhim army":  "⚡",
+  default:      "🏛",
+};

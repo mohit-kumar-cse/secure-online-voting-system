@@ -1,62 +1,111 @@
 // server/controllers/candidateController.js
 import Candidate from "../models/Candidate.js";
+import Vote from "../models/Vote.js";
 import fs from "fs";
 
-// GET ALL CANDIDATES
+// ─── GET ALL CANDIDATES ───────────────────────────────────────
 export const getCandidates = async (req, res) => {
   try {
-    const candidates = await Candidate.find();
+    
+    const candidates = await Candidate.find().sort({ constituency: 1, name: 1 });
     res.json(candidates);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("getCandidates:", error);
+    res.status(500).json({ message: "Failed to fetch candidates." });
   }
 };
 
-// GET SINGLE CANDIDATE
+// ─── GET SINGLE CANDIDATE ─────────────────────────────────────
 export const getCandidateById = async (req, res) => {
   try {
     const candidate = await Candidate.findById(req.params.id);
     if (!candidate) {
-      return res.status(404).json({ message: "Candidate not found" });
+      return res.status(404).json({ message: "Candidate not found." });
     }
     res.json(candidate);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("getCandidateById:", error);
+    res.status(500).json({ message: "Failed to fetch candidate." });
   }
 };
 
-// ADD CANDIDATE (admin only, with image)
+// ─── ADD CANDIDATE (admin only) ───────────────────────────────
 export const addCandidate = async (req, res) => {
   try {
+ 
+    if (req.fileValidationError) {
+      return res.status(400).json({ message: req.fileValidationError });
+    }
+
     const { name, party, age, constituency, manifesto, education, experience } = req.body;
+
+     
+    if (!name || !party || !age || !constituency || !manifesto || !education || !experience) {
+      
+      if (req.file) fs.unlinkSync(req.file.path);
+      return res.status(400).json({ message: "All candidate fields are required." });
+    }
+
+    const ageNum = Number(age);
+    if (isNaN(ageNum) || ageNum < 25 || ageNum > 120) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      return res.status(400).json({ message: "Age must be between 25 and 120." });
+    }
+
     const image = req.file ? req.file.filename : "";
 
     const candidate = await Candidate.create({
-      name, party, age, constituency,
-      manifesto, education, experience, image,
+      name: name.trim(),
+      party: party.trim(),
+      age: ageNum,
+      constituency: constituency.trim(),
+      manifesto: manifesto.trim(),
+      education: education.trim(),
+      experience: experience.trim(),
+      image,
     });
 
     res.status(201).json(candidate);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+   
+    if (req.file) {
+      try { fs.unlinkSync(req.file.path); } catch {}
+    }
+    console.error("addCandidate:", error);
+    res.status(500).json({ message: "Failed to add candidate." });
   }
 };
 
-// DELETE CANDIDATE (admin only)
+// ─── DELETE CANDIDATE (admin only) ───────────────────────────
 export const deleteCandidate = async (req, res) => {
   try {
     const candidate = await Candidate.findById(req.params.id);
     if (!candidate) {
-      return res.status(404).json({ message: "Candidate not found" });
+      return res.status(404).json({ message: "Candidate not found." });
     }
-    // Delete image file
+
+ 
+    if (candidate.totalVotes > 0) {
+      return res.status(400).json({
+        message: `Cannot delete — ${candidate.totalVotes} vote(s) cast for this candidate. Reset votes first.`,
+      });
+    }
+
+     
     if (candidate.image) {
       const imgPath = `uploads/candidates/${candidate.image}`;
-      if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+      if (fs.existsSync(imgPath)) {
+        try { fs.unlinkSync(imgPath); } catch (e) {
+          console.warn("Could not delete image file:", e.message);
+        }
+      }
     }
+
     await candidate.deleteOne();
-    res.json({ message: "Candidate deleted" });
+    res.json({ message: "Candidate deleted successfully." });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("deleteCandidate:", error);
+    res.status(500).json({ message: "Failed to delete candidate." });
   }
 };

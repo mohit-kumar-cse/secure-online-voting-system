@@ -1,8 +1,9 @@
-// C:\secure-online-voting-system\client\src\routes\AppRoutes.jsx
-
-import { createBrowserRouter } from "react-router-dom";
+// client/src/routes/AppRoutes.jsx
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
+import ProtectedRoute from "./ProtectedRoute";
+import PublicOnlyRoute from "./PublicOnlyRoute";  
 
 import Home from "../pages/Home";
 import Login from "../pages/Login";
@@ -14,78 +15,57 @@ import MyVote from "../pages/MyVote";
 import ElectionStatus from "../pages/ElectionStatus";
 import Results from "../pages/Results";
 import AdminDashboard from "../pages/AdminDashboard";
+import NotFound from "../pages/NotFound"; 
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-
     children: [
 
-      // Default Route
+     
+      { index: true, element: <Navigate to="/login" replace /> },
+
+      
       {
-        index: true,
-        element: <Login />,
-      },
-      {
-        path: "admin",
-        element: <AdminDashboard />,
+        element: <PublicOnlyRoute />,
+        children: [
+          { path: "login",    element: <Login /> },
+          { path: "register", element: <Register /> },
+        ],
       },
 
-
-      // Login
+       
       {
-        path: "login",
-        element: <Login />,
+        element: <ProtectedRoute />,
+        children: [
+          { path: "home",            element: <Home /> },
+          { path: "candidates",      element: <Candidates /> },
+          { path: "candidate/:id",   element: <CandidateProfile /> },
+          { path: "results",         element: <Results /> },
+          { path: "election-status", element: <ElectionStatus /> },
+        ],
       },
 
-      // Register
+       
       {
-        path: "register",
-        element: <Register />,
+        element: <ProtectedRoute requiredRole="VOTER" />,
+        children: [
+          { path: "cast-vote", element: <CastVote /> },
+          { path: "my-vote",   element: <MyVote /> },
+        ],
       },
 
-      // Home
+      
       {
-        path: "home",
-        element: <Home />,
+        element: <ProtectedRoute requiredRole="ADMIN" />,
+        children: [
+          { path: "admin", element: <AdminDashboard /> },
+        ],
       },
 
-      // Candidates
-      {
-        path: "candidates",
-        element: <Candidates />,
-      },
-
-      // Candidate Profile
-      {
-        path: "candidate/:id",
-        element: <CandidateProfile />,
-      },
-
-      // Cast Vote
-      {
-        path: "cast-vote",
-        element: <CastVote />,
-      },
-
-      // My Vote
-      {
-        path: "my-vote",
-        element: <MyVote />,
-      },
-
-      // Election Status
-      {
-        path: "election-status",
-        element: <ElectionStatus />,
-      },
-
-      // Results
-      {
-        path: "results",
-        element: <Results />,
-      },
+      
+      { path: "*", element: <NotFound /> },
 
     ],
   },

@@ -1,13 +1,30 @@
-import axios from "axios";
+// client/src/services/candidateService.js
+import api from "../utils/api";  
 
-const API =
-  "http://localhost:5000/api/candidates";
-
-
-// Get All Candidates
+/**
+ * Fetch all candidates.
+ * @returns {Array} list of candidate objects
+ */
 export const getCandidates = async () => {
+  try {
+    const { data } = await api.get("/candidates");
+    return data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch candidates.");
+  }
+};
 
-  const response = await axios.get(API);
-
-  return response.data;
+/**
+  
+  
+ * @param {string} id - candidate MongoDB _id
+ * @returns {object} candidate object
+ */
+export const getCandidateById = async (id) => {
+  try {
+    const { data } = await api.get(`/candidates/${id}`);
+    return data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Candidate not found.");
+  }
 };

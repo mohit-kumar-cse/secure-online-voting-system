@@ -1,35 +1,22 @@
+// client/src/utils/calculateTime.js
+
 const calculateTime = (targetDate) => {
+  const zero = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-  const difference =
-    new Date(targetDate) - new Date();
+  
+  if (!targetDate) return zero;
 
-  if (difference <= 0) {
+  const target = new Date(targetDate);
+  if (isNaN(target.getTime())) return zero; 
 
-    return {
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-    };
-  }
+  const difference = target - new Date();
+  if (difference <= 0) return zero;
 
   return {
-
-    days: Math.floor(
-      difference / (1000 * 60 * 60 * 24)
-    ),
-
-    hours: Math.floor(
-      (difference / (1000 * 60 * 60)) % 24
-    ),
-
-    minutes: Math.floor(
-      (difference / (1000 * 60)) % 60
-    ),
-
-    seconds: Math.floor(
-      (difference / 1000) % 60
-    ),
+    days:    Math.floor(difference / (1000 * 60 * 60 * 24)),
+    hours:   Math.floor((difference / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((difference / (1000 * 60)) % 60),
+    seconds: Math.floor((difference / 1000) % 60),
   };
 };
 

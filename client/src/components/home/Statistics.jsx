@@ -1,8 +1,9 @@
+// client/src/components/home/Statistics.jsx
 import { useEffect, useState, useContext } from "react";
-import axios from "axios";
 import { ElectionContext } from "../../context/ElectionContext";
 import StatCard from "../stats/StatCard";
 import BottomStats from "../stats/BottomStats";
+import api from "../../utils/api";
 
 const Statistics = () => {
   const { election } = useContext(ElectionContext);
@@ -11,13 +12,14 @@ const Statistics = () => {
     totalVotes: 0,
     totalCandidates: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const [candidatesRes, votesRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/candidates"),
-          axios.get("http://localhost:5000/api/votes/stats"),
+          api.get("/candidates"), 
+          api.get("/votes/stats"),
         ]);
         setStats({
           totalCandidates: candidatesRes.data?.length || 0,
@@ -26,6 +28,8 @@ const Statistics = () => {
         });
       } catch (err) {
         console.error("Stats fetch error:", err.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStats();
@@ -36,15 +40,16 @@ const Statistics = () => {
     : 0;
 
   const remainingDays = election?.endDate
-    ? Math.max(0, Math.ceil(
-        (new Date(election.endDate) - new Date()) / (1000 * 60 * 60 * 24)
-      ))
+    ? Math.max(
+        0,
+        Math.ceil((new Date(election.endDate) - new Date()) / (1000 * 60 * 60 * 24))
+      )
     : 0;
 
   const cards = [
     {
       label: "Registered voters",
-      value: stats.totalVoters.toLocaleString() + "+",
+      value: loading ? "..." : stats.totalVoters.toLocaleString() + "+",
       bar: 100,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-700",
@@ -57,7 +62,7 @@ const Statistics = () => {
     },
     {
       label: "Votes cast",
-      value: stats.totalVotes.toLocaleString() + "+",
+      value: loading ? "..." : stats.totalVotes.toLocaleString() + "+",
       bar: turnout,
       iconBg: "bg-green-50",
       iconColor: "text-green-700",
@@ -70,7 +75,7 @@ const Statistics = () => {
     },
     {
       label: "Voter turnout",
-      value: turnout + "%",
+      value: loading ? "..." : turnout + "%",
       bar: turnout,
       iconBg: "bg-amber-50",
       iconColor: "text-amber-700",
@@ -105,8 +110,10 @@ const Statistics = () => {
       />
 
       <div className="flex items-center justify-center gap-2 mt-4">
-        <div className="w-2 h-2 rounded-full bg-green-500" />
-        <p className="text-xs text-gray-400">Live data · Last updated just now</p>
+        <div className={`w-2 h-2 rounded-full ${loading ? "bg-gray-300" : "bg-green-500"}`} />
+        <p className="text-xs text-gray-400">
+          {loading ? "Fetching live data..." : "Live data · Last updated just now"}
+        </p>
       </div>
     </section>
   );
