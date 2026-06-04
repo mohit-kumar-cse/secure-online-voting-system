@@ -2,10 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom"; 
 import api from "../utils/api"; 
-
-const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
-
-const MyVote = () => {
+  const MyVote = () => {
   const [vote, setVote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false); 
@@ -130,7 +127,7 @@ const MyVote = () => {
             <div className="flex items-center gap-3">
               {hasImage ? (
                 <img
-                  ssrc={candidate.image}
+                  src={candidate.image}
                   alt={candidate?.name}
                   onError={() => setImgError(true)}
                   className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0"
